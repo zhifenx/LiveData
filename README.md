@@ -29,6 +29,7 @@ public struct ObserverKey: Hashable {
 public class LiveData<T> {
     private var _nextKey = ObserverKey(rawValue: 0)
     private var observers: [ObserverKey: Observer<T>]?
+    private var queue = DispatchQueue(label: "com.livedata.serqueue")
     
     public init() {}
     
@@ -53,32 +54,37 @@ public class LiveData<T> {
     ///   - event: 事件回调
     /// - Returns: 观察者 key 可以用removeKey(_ key:)来移除特定的观察者
     public func subscribeWithKey(fire: Bool, _ event: @escaping (T?) -> Void) -> ObserverKey {
-        let observer = Observer(event)
-        
-        let key = _nextKey
-        _nextKey = ObserverKey(rawValue: _nextKey.rawValue + 1)
-        
-        if self.observers == nil {
-            self.observers = [key: observer]
-        }else {
-            self.observers![key] = observer
+                queue.sync {
+            let observer = Observer(event)
+            
+            let key = _nextKey
+            _nextKey = ObserverKey(rawValue: _nextKey.rawValue + 1)
+            
+            if self.observers == nil {
+                self.observers = [key: observer]
+            }else {
+                self.observers![key] = observer
+            }
+            
+            if fire {
+                self.notityObservers()
+            }
+            return key
         }
-        
-        if fire {
-            self.notityObservers()
-        }
-        
-        return key
     }
 
     /// 移除制定key的观察者
     public func removeKey(_ key: ObserverKey) {
-        self.observers?.removeValue(forKey: key)
+        queue.sync {
+            self.observers?.removeValue(forKey: key)
+        }
     }
     
     /// 移除所有的观察者
     public func removeAll() {
-        self.observers?.removeAll()
+        queue.sync {
+            self.observers?.removeAll()
+        }
     }
     
     private func notityObservers() {
