@@ -1,6 +1,29 @@
 # LiveData
 
-LiveData是使用Swift属性观察器+泛型+闭包实现的观察者模式通信工具
+这是一个使用泛型类型的LiveData类,实现了观察者模式,可以用于发布数据更新的通知。
+
+主要功能有:
+
+1. 定义了Observer结构体,封装了事件回调。
+
+2. LiveData类使用泛型定义,可以持有任意类型的数据。
+
+3. value属性通过didSet发布更新通知,调用notityObservers()方法。
+
+4. 提供subscribe方法进行订阅,返回ObserverKey。
+
+5. subscribeWithKey方法可以直接获取ObserverKey。
+
+6. 使用字典存储观察者,Key是ObserverKey。
+
+7. notityObservers遍历观察者字典,调用每个观察者的回调方法。
+
+8. 提供removeKey方法移除指定观察者。
+
+9. 提供removeAll方法移除所有观察者。
+
+
+这个LiveData实现了基于观察者模式的数据绑定功能,通过订阅LiveData的value变化来获取数据更新。可以用于MVVM架构中ViewModel和View之间的数据绑定。
 
 ```
 //  LiveData.swift
